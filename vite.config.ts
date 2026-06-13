@@ -8,4 +8,19 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+
+  resolve: {
+    alias: {
+      "@": "/src",
+      "@shared": "/src/shared",
+      "@features": "/src/features",
+      "@pages": "/src/pages",
+      "@entities": "/src/entities",
+      "@widgets": "/src/widgets",
+    },
+  },
+
+  optimizeDeps: {
+    include: ["@/*"],
+  },
 })
