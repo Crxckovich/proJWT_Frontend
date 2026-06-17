@@ -1,4 +1,4 @@
 export { AuthService } from "./model/services/AuthService"
-export { authStore } from "./model/store/authStore"
 
 export {AuthFormWrapper} from "./ui/AuthFormWrapper/AuthFormWrapper"
+export {LogoutButton} from "./ui/LogoutButton/LogoutButton"

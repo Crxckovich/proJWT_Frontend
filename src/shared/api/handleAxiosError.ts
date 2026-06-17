@@ -26,8 +26,11 @@ export function handleAxiosError(error: unknown): IAppError {
   }
 
   if (error instanceof Error) {
+    console.log({ ...defaultError, message: error.message })
     return { ...defaultError, message: error.message };
   }
+
+  console.log(defaultError)
 
   return defaultError;
 }

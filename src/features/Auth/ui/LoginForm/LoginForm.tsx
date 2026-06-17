@@ -1,58 +1,71 @@
-import { useState } from "react";
-import styles from './LoginForm.module.scss';
-import { authStore } from "@/features/Auth";
+import { useCallback, useState } from "react";
+import styles from "./LoginForm.module.scss";
+import { useAuthStore } from "@/app/providers/StoreProvider/StoresRegister.ts";
+import { observer } from "mobx-react-lite";
+import { Button } from "@/shared/ui/Button";
+import { Input } from "@/shared/ui/Input";
+import { useNavigate } from "react-router-dom";
+import { getRouteMain } from "@/shared/const/router.ts";
 
 export interface ILoginFormProps {
-    onFormChange?: () => void;
+  onFormChange?: () => void;
 }
 
-const LoginForm = ({ onFormChange }: ILoginFormProps) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+export const LoginForm = observer(
+  ({ onFormChange }: ILoginFormProps) => {
+    const authStore = useAuthStore();
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleSubmit = useCallback(
+      (email: string, password: string) => {
+        authStore
+          .login(email, password)
+          .then(() => navigate(getRouteMain()));
+      },
+      [authStore, navigate]
+    );
 
     return (
-        <form className={styles.loginForm} onSubmit={(e) => e.preventDefault()}>
-            <h2 className={styles.title}>Вход в аккаунт</h2>
+      <form
+        className={styles.loginForm}
+        onSubmit={(e) => e.preventDefault()}
+      >
+        <h2 className={styles.title}>Вход в аккаунт</h2>
 
-            <div className={styles.field}>
-                <input
-                    className={styles.input}
-                    onChange={(e) => setEmail(e.target.value)}
-                    value={email}
-                    type="email"
-                    placeholder="Email"
-                    required
-                />
-            </div>
+        <div className={styles.field}>
+          <Input
+            onChange={setEmail}
+            value={email}
+            type="email"
+            placeholder="Email"
+            required
+          />
+        </div>
 
-            <div className={styles.field}>
-                <input
-                    className={styles.input}
-                    onChange={(e) => setPassword(e.target.value)}
-                    value={password}
-                    type="password"
-                    placeholder="Пароль"
-                    required
-                />
-            </div>
+        <div className={styles.field}>
+          <Input
+            onChange={setPassword}
+            value={password}
+            type="password"
+            placeholder="Пароль"
+            required
+          />
+        </div>
 
-            <button
-                type="submit"
-                className={styles.submitBtn}
-                onClick={() => authStore.login(email, password)}
-            >
-                Войти
-            </button>
+        <Button
+          type="submit"
+          onClick={() => handleSubmit(email, password)}
+        >
+          Войти
+        </Button>
 
-            <button
-                type="button"
-                className={styles.switchBtn}
-                onClick={onFormChange}
-            >
-                Ещё не зарегистрированы?
-            </button>
-        </form>
+        <Button type="button" onClick={onFormChange}>
+          Ещё не зарегистрированы?
+        </Button>
+      </form>
     );
-};
-
-export default LoginForm;
+  }
+);

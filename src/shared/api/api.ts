@@ -7,9 +7,21 @@ export const $api = axios.create({
 });
 
 $api.interceptors.request.use((config) => {
-  if (config.headers) {
-    const storedValue = localStorage.getItem(USER_LOCALSTORAGE_KEY) || "";
-    config.headers.Authorization = encodeURIComponent(storedValue);
+  const storedValue = localStorage.getItem(USER_LOCALSTORAGE_KEY);
+
+  if (storedValue) {
+    try {
+      const authData = JSON.parse(storedValue);
+
+      const accessToken = authData.accessToken || authData.tokens?.accessToken;
+
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    } catch (e) {
+      console.error("Ошибка парсинга токена из localStorage", e);
+    }
   }
+
   return config;
 });

@@ -1,4 +1,4 @@
-export type {IUser} from "./model/types/user.types"
-
-export {userStore} from "./model/store/userStore"
-export {UsersApi} from "./api/UsersApi"
+export type { IUser } from "./model/types/user.types";
+export { ERole } from "./model/types/user.types";
+export { UserInfo } from "./ui/UserInfo";
+export { UsersList } from "./ui/UsersList";

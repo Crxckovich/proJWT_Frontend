@@ -1,6 +1,11 @@
-enum ERole {
+export enum ERole {
     "USER" = 1,
     "ADMIN" = 2,
+}
+
+export interface IRole {
+    id: number;
+    value: ERole;
 }
 
 export interface IUser {

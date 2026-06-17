@@ -1,76 +1,115 @@
-import {type IUser, userStore} from "@/entities/User";
-import {makeAutoObservable} from "mobx";
-import {AuthService} from "../services/AuthService.ts";
-import {handleAxiosError} from "@/shared/api/handleAxiosError.ts";
-import {redirect} from "react-router";
+import { type IUser } from "@/entities/User";
+import { makeAutoObservable, runInAction } from "mobx";
+import { AuthService } from "@/features/Auth";
+import { handleAxiosError } from "@/shared/api/handleAxiosError.ts";
 import axios from "axios";
-import type {IAuthRes} from "@/features/Auth/model/types/auth.types.ts";
-import {API} from "@/shared/config/env.ts";
+import type { IAuthRes } from "../types/auth.types.ts";
+import type { RootStore } from "@/app/providers/StoreProvider/RootStore.ts";
+import type { UserStore } from "@/entities/User/model/store/userStore.ts";
+import { USER_LOCALSTORAGE_KEY } from "@/shared/const/localStorage.ts";
 
 export class AuthStore {
-    isAuth = false;
+  isAuth = false;
+  isLoading = true;
 
-    constructor() {
-        makeAutoObservable(this);
+  private initPromise: Promise<void> | null = null;
+
+  constructor(private readonly root: RootStore) {
+    makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  private get userStore(): UserStore {
+    return this.root.getStore("userStore");
+  }
+
+  setAuth(bool: boolean) {
+    this.isAuth = bool;
+  }
+
+  async initAuth(): Promise<void> {
+    if (this.isAuth) {
+      return;
     }
 
-    setAuth(bool: boolean) {
-        this.isAuth = bool;
+    if (this.initPromise) {
+      return this.initPromise;
     }
+    this.isLoading = true;
 
-    async signup(name: string, email: string, password: string) {
-        try {
-            const response = await AuthService.signup(name, email, password);
-            console.log(response);
-            localStorage.setItem('user', JSON.stringify(response));
-            this.setAuth(true);
+    this.initPromise = (async () => {
+      try {
+        const response = await axios.get<IAuthRes>(
+          "http://localhost:5000/api/refresh",
+          { withCredentials: true }
+        );
 
-            userStore.setUser(response.data.user);
-            redirect("/");
-        } catch (e) {
-            handleAxiosError(e)
-        }
+        localStorage.setItem(
+          USER_LOCALSTORAGE_KEY,
+          JSON.stringify(response.data)
+        );
+
+        runInAction(() => {
+          this.setAuth(true);
+          this.userStore.setUser(response.data.user);
+        });
+      } catch {
+        localStorage.removeItem(USER_LOCALSTORAGE_KEY);
+        runInAction(() => {
+          this.setAuth(false);
+          this.userStore.setUser({} as IUser);
+        });
+      } finally {
+        runInAction(() => {
+          this.isLoading = false;
+          this.initPromise = null;
+        });
+      }
+    })();
+
+    return this.initPromise;
+  }
+
+  async signup(name: string, email: string, password: string) {
+    try {
+      const response = await AuthService.signup(
+        name,
+        email,
+        password
+      );
+      localStorage.setItem(
+        USER_LOCALSTORAGE_KEY,
+        JSON.stringify(response.data)
+      );
+      this.setAuth(true);
+      this.userStore.setUser(response.data.user);
+    } catch (e) {
+      handleAxiosError(e);
     }
+  }
 
-    async login(email: string, password: string) {
-        try {
-            const response = await AuthService.login(email, password);
-            console.log(response);
-            localStorage.setItem('user', JSON.stringify(response));
-            this.setAuth(true);
+  async login(email: string, password: string) {
+    try {
+      const response = await AuthService.login(email, password);
+      localStorage.setItem(
+        USER_LOCALSTORAGE_KEY,
+        JSON.stringify(response.data)
+      );
+      this.setAuth(true);
 
-            userStore.setUser(response.data.user);
-            redirect("/");
-        } catch (e) {
-            handleAxiosError(e)
-        }
+      this.userStore.setUser(response.data.user);
+    } catch (e) {
+      handleAxiosError(e);
     }
+  }
 
-    async logout() {
-        try {
-            await AuthService.logout();
-            localStorage.removeItem('user');
-            this.setAuth(false);
-
-            userStore.setUser({} as IUser);
-            redirect("/auth");
-        } catch (e) {
-            handleAxiosError(e)
-        }
+  async logout() {
+    try {
+      await AuthService.logout();
+      localStorage.removeItem(USER_LOCALSTORAGE_KEY);
+      this.setAuth(false);
+      this.userStore.setUser({} as IUser);
+    } catch (e) {
+      handleAxiosError(e);
     }
-
-    async checkAuth() {
-        try {
-            const response = await axios.get<IAuthRes>(`${API}/refresh`, {withCredentials: true})
-
-            localStorage.setItem('user', JSON.stringify(response));
-            this.setAuth(true);
-
-            userStore.setUser(response.data.user);
-        } catch (e) {
-            handleAxiosError(e)
-        }
-    }
+  }
 }
-
-export const authStore = new AuthStore();

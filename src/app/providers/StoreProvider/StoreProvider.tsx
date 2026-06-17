@@ -1,22 +1,15 @@
 import {createContext, type ReactNode} from "react";
-import type {IStateSchema} from "./config/StateSchema.ts";
-import {userStore} from "@/entities/User";
-import { authStore } from "@/features/Auth";
+import { RootStore } from "./RootStore.ts";
 
 interface IStoreProviderProps {
-    children?: ReactNode;
+    children: ReactNode;
 }
 
-export const StoreContext = createContext<IStateSchema>({
-    authStore,
-    userStore
-});
+export const StoreContext = createContext<RootStore | null>(null);
 
-const StoreProvider = ({children}: IStoreProviderProps) => {
-
+export const StoreProvider = ({ children }: IStoreProviderProps) => {
     return (
-        <StoreContext.Provider
-            value={{authStore, userStore}}>
+        <StoreContext.Provider value={new RootStore()}>
             {children}
         </StoreContext.Provider>
     );

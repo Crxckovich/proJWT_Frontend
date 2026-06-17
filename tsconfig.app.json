@@ -7,7 +7,7 @@
     "noImplicitAny": true,
     "target": "es5",
     "allowJs": true,
-    "strict": true,
+    "strict": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
@@ -38,10 +38,14 @@
       "module": "CommonJS"
     }
   },
+  "lint-staged": {
+    "**/*.{ts,tsx}": [
+      "eslint"
+    ]
+  },
   "include": [
     "./config/jest/setupTests.ts",
     "./src/**/*.ts",
     "./src/**/*.tsx"
   ],
-  "exclude": ["node_modules"]
 }

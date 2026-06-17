@@ -1,34 +1,25 @@
-import './styles/App.css'
-import {AuthFormWrapper} from "@/features/Auth";
-import {useContext, useEffect} from "react";
-import {StoreContext} from "@/app/providers/StoreProvider/StoreProvider.tsx";
-import {observer} from "mobx-react-lite";
+import { observer } from "mobx-react-lite";
+import { useEffect } from "react";
+import { useAuthStore } from "./providers/StoreProvider/StoresRegister";
+import AppRouter from "@/app/router/AppRouter.tsx";
+import {PageLoader} from "@/shared/ui/PageLoader";
 
-function App() {
+const App = observer(() => {
+    const authStore = useAuthStore();
 
-    const {authStore} = useContext(StoreContext)
-
-    // TODO: Сделать нормальный роутинг
-    // TODO: Сделать мидлвейр проверки токена
-    // TODO: Сделать 404
-    // TODO: Раскидать код по файлам
     useEffect(() => {
-        if (localStorage.getItem("token")) {
-            authStore.checkAuth();
-        }
-    }, [])
+        authStore.initAuth();
+    }, [authStore]);
 
-    if (!authStore.isAuth) {
-        return (
-            <AuthFormWrapper/>
-        )
+    if (authStore.isLoading) {
+        return <PageLoader />;
     }
 
-  return (
-      <section id="center">
-          <AuthFormWrapper/>
-      </section>
-  )
-}
+    return (
+        <section id="center">
+            <AppRouter/>
+        </section>
+    );
+});
 
-export default observer(App)
+export default App;
