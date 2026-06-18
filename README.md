@@ -16,7 +16,7 @@
 ## ✨ Особенности
 
 ### Backend
-- **Чистая архитектура** (Clean Architecture + Feature-Sliced Design)
+- **Чистая архитектура**
 - **Bun** + **Express** - для максимальной производительности
 - Полноценная JWT-авторизация (Access + Refresh tokens)
 - Активация аккаунта через email

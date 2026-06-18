@@ -26,6 +26,10 @@ export class AuthStore {
     this.isAuth = bool;
   }
 
+  setLoading(bool: boolean) {
+    this.isLoading = bool;
+  }
+
   async initAuth(): Promise<void> {
     if (this.isAuth) {
       return;
@@ -34,7 +38,7 @@ export class AuthStore {
     if (this.initPromise) {
       return this.initPromise;
     }
-    this.isLoading = true;
+    this.setLoading(true);
 
     this.initPromise = (async () => {
       try {
@@ -60,7 +64,7 @@ export class AuthStore {
         });
       } finally {
         runInAction(() => {
-          this.isLoading = false;
+          this.setLoading(false);
           this.initPromise = null;
         });
       }
